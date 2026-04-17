@@ -11,51 +11,61 @@ from acoustools.Solvers import gradient_descent_solver
 from torch import Tensor
 import torch
 import os
+import pickle
 
 board = TRANSDUCERS
-p = create_points(1,1,0,0.0,-0.0)
+p = create_points(1,1,0,0.02,-0.0)
 
 path = "../BEMMedia"
 
-reflector = load_scatterer(path + '/LongTube-lam1.stl')
+reflector = load_scatterer(path + '/Wobble-Tunnel-lam4.stl')
 
-d = wavelength*3
+d = wavelength*5
 
 scale_to_diameter(reflector, d)
 centre_scatterer(reflector)
 
 print(reflector.bounds())
+get_edge_data(reflector)
 
-H = get_cache_or_compute_H(reflector, board, path=path, use_cache_H=False, method='OLS')
-E = compute_E(reflector, p, board, H=H)
-x = iterative_backpropagation(p, board=board, A=E)
+COMPUTE = False
 
-# internal_points  = get_CHIEF_points(reflector, P = 10, start='centre', method='uniform', scale=0.45, scale_mode='diameter-scale')
-P=80
-internal_points = torch.cat(interpolate_circle(p, radius=(d/2)*0.9, n=P, plane='xz'), dim=2) 
-H_CHIEF = get_cache_or_compute_H(reflector, board, path=path, use_cache_H=False, internal_points=internal_points, method='OLS')
-E_CHIEF = compute_E(reflector, p, board, H=H_CHIEF)
-#
+if COMPUTE:
+    H = get_cache_or_compute_H(reflector, board, path=path, use_cache_H=False, method='OLS')
+    E = compute_E(reflector, p, board, H=H)
 
-def compute_trap(point, E, baord):
+    # internal_points  = get_CHIEF_points(reflector, P = 10, start='centre', method='uniform', scale=0.45, scale_mode='diameter-scale')
+    P=-1
+    internal_points = get_CHIEF_points(reflector, P=P, start='surface', scale=0.001, scale_mode='abs')
+    H_CHIEF = get_cache_or_compute_H(reflector, board, path=path, use_cache_H=False, internal_points=internal_points, method='OLS')
+    E_CHIEF = compute_E(reflector, p, board, H=H_CHIEF)
+
+    pickle.dump([H,E,H_CHIEF, E_CHIEF, internal_points], open('./Resonance/data/WT-lam4-objs.bin', 'wb'))
+else:
+    H,E,H_CHIEF, E_CHIEF, internal_points = pickle.load(open('./Resonance/data/WT-lam4-objs.bin', 'rb'))
+    #
+
+def compute_trap(point, Emat,Hmat, baord):
 
     def min_U(transducer_phases: Tensor, points:Tensor, board:Tensor, targets:Tensor = None, **objective_params):
-        U = BEM_gorkov_analytical(transducer_phases, points, reflector, E=E, internal_points=None, H=H, path=path)
+        U = BEM_gorkov_analytical(transducer_phases, points, reflector, E=Emat, internal_points=None, path=path, board=board, H=Hmat)
+        # print(U)
         return U.mean().unsqueeze(0)
 
-    x = gradient_descent_solver(point, min_U,board, lr=1e3, log=True)
+    x = gradient_descent_solver(point, min_U,board, lr=1e20, log=True)
 
     return x
 
-xCHIEF = compute_trap(p, E, board)
-xCHIEF = compute_trap(p, E_CHIEF, board)
+
+x = compute_trap(p, E, H, board)
+xCHIEF = compute_trap(p, E_CHIEF, H_CHIEF, board)
 # xCHIEF = iterative_backpropagation(p, board=board, A=E_CHIEF)
 # xCHIEF = add_lev_sig(xCHIEF)
 
 # x = iterative_backpropagation(p, board=board, A=E)
 # x = add_lev_sig(x)
 
-Visualise(*ABC(0.06, plane='yz'), [x,xCHIEF, x, xCHIEF], res = (100,100), points=p,
+Visualise(*ABC(0.03, plane='yz'), [x,xCHIEF, x, xCHIEF], res = (100,100), points=p,
         colour_functions=[BEM_gorkov_analytical, BEM_gorkov_analytical, propagate_BEM_pressure, propagate_BEM_pressure],
         colour_function_args=[{'path':path, 'board':board, 'scatterer':reflector, "H":H_CHIEF},
                                 {'path':path, 'board':board, 'scatterer':reflector, "H":H_CHIEF},
