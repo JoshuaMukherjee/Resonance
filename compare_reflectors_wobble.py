@@ -14,7 +14,7 @@ import os
 import pickle
 
 board = TRANSDUCERS
-p = create_points(1,1,0,0.02,-0.0)
+p = create_points(1,1,0,0.0,-0.0)
 
 path = "../BEMMedia"
 

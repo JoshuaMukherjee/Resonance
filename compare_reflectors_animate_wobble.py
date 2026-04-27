@@ -8,6 +8,7 @@ from acoustools.BEM import propagate_BEM_pressure, compute_E, propagate_BEM_phas
 from acoustools.Constants import wavelength,k
 from acoustools.Paths import interpolate_circle, interpolate_points
 from acoustools.Solvers import gradient_descent_solver
+from acoustools.Export.Holo import save_holograms
 from torch import Tensor
 import torch, pickle
 import os
@@ -44,16 +45,16 @@ else:
     H,E,H_CHIEF, E_CHIEF, internal_points = pickle.load(open('./Resonance/data/WT-lam4-objs.bin', 'rb'))
 
 
-start = create_points(1,1,0,0.04,0)
-end = create_points(1,1,0,-0.04,0)
+start = create_points(1,1,0,0.06,0)
+end = create_points(1,1,0,-0.06,0)
 
-path = interpolate_points(start, end, n=30)
+path = interpolate_points(start, end, n=1000)
 
 
-def compute_trap(point, Emat,Hmat, baord):
+def compute_trap(point,Hmat, baord):
 
     def min_U(transducer_phases: Tensor, points:Tensor, board:Tensor, targets:Tensor = None, **objective_params):
-        U = BEM_gorkov_analytical(transducer_phases, points, reflector, E=Emat, internal_points=None, path=path, board=board, H=Hmat)
+        U = BEM_gorkov_analytical(transducer_phases, points, reflector, internal_points=None, path=path, board=board, H=Hmat, dims='Z')
         # print(U)
         return U.mean().unsqueeze(0)
 
@@ -65,13 +66,15 @@ for n,p in enumerate(path):
     print(n, end='\r')
     
 
-    x = compute_trap(p, E, H, board)
-    xCHIEF = compute_trap(p, E_CHIEF, H_CHIEF, board)
+    x = compute_trap(p, H, board)
+    xCHIEF = compute_trap(p, H_CHIEF, board)
+
+    save_holograms(x, f'./Resonance/data/compare_reflector_wobble/Z/Z-holos/{n}.holo')
 
     plt.gcf().clear()
     # plt.gca().clear()
 
-    Visualise(*ABC(0.042, plane='yz'), [x,xCHIEF, x, xCHIEF], res = (100,100), points=p,
+    Visualise(*ABC(0.062, plane='yz'), [x,xCHIEF, x, xCHIEF], res = (100,100), points=p,
             colour_functions=[BEM_gorkov_analytical, BEM_gorkov_analytical,propagate_BEM_pressure, propagate_BEM_pressure],
             colour_function_args=[{'path':path, 'board':board, 'scatterer':reflector, "H":H_CHIEF},
                                     {'path':path, 'board':board, 'scatterer':reflector, "H":H_CHIEF},
@@ -88,4 +91,4 @@ for n,p in enumerate(path):
 
 
 
-    plt.savefig(f'./Resonance/data/compare_reflector_wobble/img{n}.png')
+    plt.savefig(f'./Resonance/data/compare_reflector_wobble/Z/img{n}.png')
