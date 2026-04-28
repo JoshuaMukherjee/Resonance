@@ -22,6 +22,8 @@ ds = [0.01+wavelength * i/40 for i in range(10, 100)]
 
 
 Aconds = []
+Asv = []
+Asv_CHIEF = []
 Aconds_CHIEF = []
 
 ps = []
@@ -39,6 +41,7 @@ for i,d in enumerate(ds):
 
     A = compute_A(reflector)
     H = compute_H(reflector, board, A=A)
+    min_sv = torch.linalg.svdvals(A).min()
     Acond = torch.linalg.cond(A)
     
     E = compute_E(reflector, p, board, H=H)
@@ -47,9 +50,10 @@ for i,d in enumerate(ds):
     A_CHIEF = augment_A_CHIEF(A, internal_points, scatterer=reflector)
     H_CHIEF = compute_H(reflector, board, A=A_CHIEF, internal_points=internal_points)
     Acond_CHIEF = torch.linalg.cond(A_CHIEF)
+    min_sv_CHIEF = torch.linalg.svdvals(A_CHIEF).min()
     E_CHIEF = compute_E(reflector, p, board, H=H_CHIEF)
 
-    print(Acond, Acond_CHIEF)
+    print(Acond, Acond_CHIEF, min_sv, min_sv_CHIEF)
 
     pressure = torch.abs(E@x)
     pressure_CHIEF = torch.abs(E_CHIEF@x)
@@ -60,25 +64,40 @@ for i,d in enumerate(ds):
     ps.append(pressure.item())
     ps_CHIEF.append(pressure_CHIEF.item())
 
-
+    Asv.append(min_sv.item())
+    Asv_CHIEF.append(min_sv_CHIEF.item())
 
 
 
 import matplotlib.pyplot as plt
 
 
-plt.subplot(2,1,1)
+plt.subplot(4,1,1)
 plt.scatter(Aconds, ps, label = 'A')
 plt.scatter(Aconds_CHIEF, ps_CHIEF, label = 'A CHIEF')
 plt.ylabel('Pressure (Pa)')
 plt.xlabel('Cond')
 plt.legend()
 
-plt.subplot(2,1,2)
+plt.subplot(4,1,2)
 plt.scatter(ds, Aconds, label = 'A')
 plt.scatter(ds, Aconds_CHIEF, label = 'A CHIEF')
 plt.xlabel('Diameter (m)')
 plt.ylabel('Cond')
+plt.legend()
+
+plt.subplot(4,1,3)
+plt.scatter(Asv, Aconds,label = 'A')
+plt.scatter(Asv_CHIEF, Aconds_CHIEF, label = 'A CHIEF')
+plt.xlabel('Cond')
+plt.ylabel('Min singular Value')
+plt.legend()
+
+plt.subplot(4,1,4)
+plt.scatter(Asv, ps,label = 'A')
+plt.scatter(Asv_CHIEF, ps_CHIEF, label = 'A CHIEF')
+plt.xlabel('Min singular Value')
+plt.ylabel('Pressure (Pa)')
 plt.legend()
 
 
