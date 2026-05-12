@@ -69,26 +69,28 @@ for n,p in enumerate(path):
     x = compute_trap(p, H, board)
     xCHIEF = compute_trap(p, H_CHIEF, board)
 
-    save_holograms(x, f'./Resonance/data/compare_reflector_wobble/Z/Z-holos/{n}.holo')
-
-    plt.gcf().clear()
-    # plt.gca().clear()
-
-    Visualise(*ABC(0.062, plane='yz'), [x,xCHIEF, x, xCHIEF], res = (100,100), points=p,
-            colour_functions=[BEM_gorkov_analytical, BEM_gorkov_analytical,propagate_BEM_pressure, propagate_BEM_pressure],
-            colour_function_args=[{'path':path, 'board':board, 'scatterer':reflector, "H":H_CHIEF},
-                                    {'path':path, 'board':board, 'scatterer':reflector, "H":H_CHIEF},
-                                    {'path':path, 'board':board, 'scatterer':reflector, "H":H_CHIEF},
-                                    {'path':path, 'board':board, 'scatterer':reflector, "H":H_CHIEF},
-                                    {}],
-            link_ax=[[0,1],[2,3]],
-            arrangement=(2,2),
-            # cmaps=['hsv','hsv', 'hsv']
-            cmaps=['seismic','seismic', 'hot', 'hot'],
-            show=False,
-            vmin=-1e-7
-            )
+    save_holograms(x, f'./Resonance/data/compare_reflector_wobble/Z/Z-holos/BEM/{n}.holo')
+    save_holograms(xCHIEF, f'./Resonance/data/compare_reflector_wobble/Z/Z-holos/CHIEF/{n}.holo')
 
 
+    # plt.gcf().clear()
+    # # plt.gca().clear()
 
-    plt.savefig(f'./Resonance/data/compare_reflector_wobble/Z/img{n}.png')
+    # Visualise(*ABC(0.062, plane='yz'), [x,xCHIEF, x, xCHIEF], res = (100,100), points=p,
+    #         colour_functions=[BEM_gorkov_analytical, BEM_gorkov_analytical,propagate_BEM_pressure, propagate_BEM_pressure],
+    #         colour_function_args=[{'path':path, 'board':board, 'scatterer':reflector, "H":H_CHIEF},
+    #                                 {'path':path, 'board':board, 'scatterer':reflector, "H":H_CHIEF},
+    #                                 {'path':path, 'board':board, 'scatterer':reflector, "H":H_CHIEF},
+    #                                 {'path':path, 'board':board, 'scatterer':reflector, "H":H_CHIEF},
+    #                                 {}],
+    #         link_ax=[[0,1],[2,3]],
+    #         arrangement=(2,2),
+    #         # cmaps=['hsv','hsv', 'hsv']
+    #         cmaps=['seismic','seismic', 'hot', 'hot'],
+    #         show=False,
+    #         vmin=-1e-7
+    #         )
+
+
+
+    # plt.savefig(f'./Resonance/data/compare_reflector_wobble/Z/img{n}.png')
