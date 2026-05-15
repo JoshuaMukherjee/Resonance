@@ -6,7 +6,6 @@ __pycache__/
 *.py[codz]
 *$py.class
 
-WobbleHolos
 *.holo
 
 # C extensions
