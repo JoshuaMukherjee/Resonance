@@ -14,18 +14,16 @@ import os
 import pickle
 
 board = TRANSDUCERS
-p = create_points(1,1,0,0.0,-0.1)
+p = create_points(1,1,0,0.0,-0.0)
 
 path = "../BEMMedia"
 
 reflector = load_scatterer(path + '/Wobble-Tunnel-lam4.stl')
 
-d = wavelength*5
 bounds = reflector.bounds()
+scale_to_diameter(reflector, (bounds[1] - bounds[0])/1000)
+centre_scatterer(reflector)
 # scale_to_diameter(reflector, (bounds[1] - bounds[0])/1000)
-
-
-scale_to_diameter(reflector, d)
 centre_scatterer(reflector)
 
 print(reflector.bounds())
@@ -39,8 +37,10 @@ if COMPUTE:
     print('Computed H')
     E = compute_E(reflector, p, board, H=H)
     print('Computed H, E')
-
-    internal_points = get_CHIEF_points(reflector, P=-1, start='tetra-random')
+    # internal_points  = get_CHIEF_points(reflector, P = 10, start='centre', method='uniform', scale=0.45, scale_mode='diameter-scale')
+    # P=-1
+    # internal_points = get_CHIEF_points(reflector, P=-1, start='surface', scale=0.001, scale_mode='abs')
+    internal_points = get_CHIEF_points(reflector, P=1, start='tetra-random')
     print('Computing H, E  CHIEF')
     H_CHIEF = get_cache_or_compute_H(reflector, board, path=path, use_cache_H=False, internal_points=internal_points, method='OLS')
     print('Computed H CHIEF')

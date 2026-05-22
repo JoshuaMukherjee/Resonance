@@ -10,4 +10,4 @@ for i,f in enumerate(os.listdir(folder)):
     x = load_holograms(folder+'/'+f)[0]
     holos.append(x)
 
-# print(holos)
+print(holos)

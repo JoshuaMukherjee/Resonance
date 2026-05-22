@@ -10,7 +10,7 @@ from acoustools.Paths import interpolate_circle, interpolate_points
 from acoustools.Solvers import gradient_descent_solver
 from acoustools.Export.Holo import save_holograms
 from torch import Tensor
-import torch, pickle
+import torch, pickle, vedo
 import os
 import matplotlib.pyplot as plt
 
@@ -22,25 +22,28 @@ reflector = load_scatterer(path + '/Wobble-Tunnel-lam4.stl')
 
 d = wavelength*5
 
+# bounds = reflector.bounds()
 scale_to_diameter(reflector, d)
 centre_scatterer(reflector)
 
 print(reflector.bounds())
-get_edge_data(reflector)
+# get_edge_data(reflector)
 
-COMPUTE = False
+# vedo.show(reflector, axes=1)
+# exit()
+
+COMPUTE = True
 
 if COMPUTE:
     H = get_cache_or_compute_H(reflector, board, path=path, use_cache_H=False, method='OLS')
-    E = compute_E(reflector, p, board, H=H)
+    # E = compute_E(reflector, p, board, H=H)
 
     # internal_points  = get_CHIEF_points(reflector, P = 10, start='centre', method='uniform', scale=0.45, scale_mode='diameter-scale')
-    P=-1
-    internal_points = get_CHIEF_points(reflector, P=P, start='surface', scale=0.001, scale_mode='abs')
+    internal_points = get_CHIEF_points(reflector, P=-1, start='tetra-random')
     H_CHIEF = get_cache_or_compute_H(reflector, board, path=path, use_cache_H=False, internal_points=internal_points, method='OLS')
-    E_CHIEF = compute_E(reflector, p, board, H=H_CHIEF)
+    # E_CHIEF = compute_E(reflector, p, board, H=H_CHIEF)
 
-    pickle.dump([H,E,H_CHIEF, E_CHIEF, internal_points], open('./Resonance/data/WT-lam4-objs.bin', 'wb'))
+    # pickle.dump([H,E,H_CHIEF, E_CHIEF, internal_points], open('./Resonance/data/WT-lam4-objs.bin', 'wb'))
 else:
     H,E,H_CHIEF, E_CHIEF, internal_points = pickle.load(open('./Resonance/data/WT-lam4-objs.bin', 'rb'))
 
@@ -62,6 +65,7 @@ def compute_trap(point,Hmat, baord):
 
     return x
 
+
 for n,p in enumerate(path):
     print(n, end='\r')
     
@@ -69,9 +73,25 @@ for n,p in enumerate(path):
     x = compute_trap(p, H, board)
     xCHIEF = compute_trap(p, H_CHIEF, board)
 
-    save_holograms(x, f'./Resonance/data/compare_reflector_wobble/Z/Z-holos/BEM/{n}.holo')
-    save_holograms(xCHIEF, f'./Resonance/data/compare_reflector_wobble/Z/Z-holos/CHIEF/{n}.holo')
+    print('Visualising')
+    Visualise(*ABC(0.07, plane='yz'), [x,xCHIEF, x, xCHIEF], res = (200,200),
+            colour_functions=[BEM_gorkov_analytical, BEM_gorkov_analytical, propagate_BEM_pressure, propagate_BEM_pressure],
+            colour_function_args=[{'path':path, 'board':board, 'scatterer':reflector, "H":H_CHIEF},
+                                    {'path':path, 'board':board, 'scatterer':reflector, "H":H_CHIEF},
+                                    {'path':path, 'board':board, 'scatterer':reflector, "H":H_CHIEF},
+                                    {'path':path, 'board':board, 'scatterer':reflector, "H":H_CHIEF},
+                                    {}],
+            link_ax=[0,1],
+            arrangement=(2,2),
+            # cmaps=['hsv','hsv', 'hsv']
+            cmaps=['seismic','seismic', 'hot', 'hot']
+            )
 
+
+    save_holograms(x, f'./data/compare_reflector_wobble/Z/Z-holos/BEM/{n}.holo')
+    save_holograms(xCHIEF, f'./data/compare_reflector_wobble/Z/Z-holos/CHIEF/{n}.holo')
+
+    exit()
 
     # plt.gcf().clear()
     # # plt.gca().clear()
