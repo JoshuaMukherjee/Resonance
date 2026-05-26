@@ -9,27 +9,31 @@ from acoustools.Constants import wavelength,k
 from acoustools.Paths import interpolate_circle
 from acoustools.Solvers import gradient_descent_solver
 from torch import Tensor
-import torch
+import torch, vedo
 import os
 import pickle
 
-board = TRANSDUCERS
-p = create_points(1,1,0,0.0,-0.1)
+board = TOP_BOARD
+p = create_points(1,1,0,0.0,0.03)
 
 path = "../BEMMedia"
 
-reflector = load_scatterer(path + '/Wobble-Tunnel-lam4.stl')
+reflector = load_scatterer(path + '/LargeTunnel-varied.stl')
 
-d = wavelength*5
+# d = wavelength*5
 bounds = reflector.bounds()
-# scale_to_diameter(reflector, (bounds[1] - bounds[0])/1000)
+scale_to_diameter(reflector, (bounds[1] - bounds[0])/1000)
+# vedo.show(reflector, axes=1)
+# exit()
 
 
-scale_to_diameter(reflector, d)
-centre_scatterer(reflector)
+# scale_to_diameter(reflector, d)
+# centre_scatterer(reflector)
 
 print(reflector.bounds())
 get_edge_data(reflector)
+
+# exit()
 
 COMPUTE = True
 
@@ -48,9 +52,9 @@ if COMPUTE:
     E_CHIEF = compute_E(reflector, p, board, H=H_CHIEF)
     print('Computed H, E CHIEF')
 
-    pickle.dump([H,E,H_CHIEF, E_CHIEF, internal_points], open('./data/WT-lam4-objs.bin', 'wb'))
+    pickle.dump([H,E,H_CHIEF, E_CHIEF, internal_points], open('./Resonance/data/WT-lam4-objs.bin', 'wb'))
 else:
-    H,E,H_CHIEF, E_CHIEF, internal_points = pickle.load(open('./data/WT-lam4-objs.bin', 'rb'))
+    H,E,H_CHIEF, E_CHIEF, internal_points = pickle.load(open('./Resonance/data/WT-lam4-objs.bin', 'rb'))
     #
 
 def compute_trap(point, Emat,Hmat, baord):
@@ -76,16 +80,18 @@ print('Computed Traps')
 # x = add_lev_sig(x)
 
 print('Visualising')
-Visualise(*ABC(0.03, plane='yz'), [x,xCHIEF, x, xCHIEF], res = (100,100),
-        colour_functions=[BEM_gorkov_analytical, BEM_gorkov_analytical, propagate_BEM_pressure, propagate_BEM_pressure],
+Visualise(*ABC(0.05, plane='yz', origin=p), [x,xCHIEF,x, x, xCHIEF,x], res = (200,200),
+        colour_functions=[BEM_gorkov_analytical, BEM_gorkov_analytical, BEM_gorkov_analytical, propagate_BEM_pressure, propagate_BEM_pressure, propagate_BEM_pressure],
         colour_function_args=[{'path':path, 'board':board, 'scatterer':reflector, "H":H_CHIEF},
                                 {'path':path, 'board':board, 'scatterer':reflector, "H":H_CHIEF},
+                                {'path':path, 'board':board, 'scatterer':reflector, "H":H},
                                 {'path':path, 'board':board, 'scatterer':reflector, "H":H_CHIEF},
                                 {'path':path, 'board':board, 'scatterer':reflector, "H":H_CHIEF},
-                                {}],
+                                {'path':path, 'board':board, 'scatterer':reflector, "H":H},
+                                ],
         link_ax=[0,1],
-        arrangement=(2,2),
+        arrangement=(2,3),
         # cmaps=['hsv','hsv', 'hsv']
-        cmaps=['seismic','seismic', 'hot', 'hot']
+        cmaps=['seismic','seismic', 'seismic', 'hot', 'hot', 'hot']
         )
 

@@ -14,17 +14,16 @@ import torch, pickle, vedo
 import os
 import matplotlib.pyplot as plt
 
-board = TRANSDUCERS
+board = TOP_BOARD
 
 path = "../BEMMedia"
 
-reflector = load_scatterer(path + '/Wobble-Tunnel-lam4.stl')
+reflector = load_scatterer(path + '/LargeTunnel-varied.stl')
+# d = wavelength*5
+bounds = reflector.bounds()
+scale_to_diameter(reflector, (bounds[1] - bounds[0])/1000)
+# vedo.show(reflector, axes=1)
 
-d = wavelength*5
-
-# bounds = reflector.bounds()
-scale_to_diameter(reflector, d)
-centre_scatterer(reflector)
 
 print(reflector.bounds())
 # get_edge_data(reflector)
@@ -48,8 +47,8 @@ else:
     H,E,H_CHIEF, E_CHIEF, internal_points = pickle.load(open('./Resonance/data/WT-lam4-objs.bin', 'rb'))
 
 
-start = create_points(1,1,0,0.06,0)
-end = create_points(1,1,0,-0.06,0)
+start = create_points(1,1,0,0.04,0.03)
+end = create_points(1,1,0,-0.04,0.03)
 
 path = interpolate_points(start, end, n=1000)
 
@@ -73,25 +72,25 @@ for n,p in enumerate(path):
     x = compute_trap(p, H, board)
     xCHIEF = compute_trap(p, H_CHIEF, board)
 
-    print('Visualising')
-    Visualise(*ABC(0.07, plane='yz'), [x,xCHIEF, x, xCHIEF], res = (200,200),
-            colour_functions=[BEM_gorkov_analytical, BEM_gorkov_analytical, propagate_BEM_pressure, propagate_BEM_pressure],
-            colour_function_args=[{'path':path, 'board':board, 'scatterer':reflector, "H":H_CHIEF},
-                                    {'path':path, 'board':board, 'scatterer':reflector, "H":H_CHIEF},
-                                    {'path':path, 'board':board, 'scatterer':reflector, "H":H_CHIEF},
-                                    {'path':path, 'board':board, 'scatterer':reflector, "H":H_CHIEF},
-                                    {}],
-            link_ax=[0,1],
-            arrangement=(2,2),
-            # cmaps=['hsv','hsv', 'hsv']
-            cmaps=['seismic','seismic', 'hot', 'hot']
-            )
+    # print('Visualising')
+    # Visualise(*ABC(0.07, plane='yz'), [x,xCHIEF, x, xCHIEF], res = (200,200),
+    #         colour_functions=[BEM_gorkov_analytical, BEM_gorkov_analytical, propagate_BEM_pressure, propagate_BEM_pressure],
+    #         colour_function_args=[{'path':path, 'board':board, 'scatterer':reflector, "H":H_CHIEF},
+    #                                 {'path':path, 'board':board, 'scatterer':reflector, "H":H_CHIEF},
+    #                                 {'path':path, 'board':board, 'scatterer':reflector, "H":H_CHIEF},
+    #                                 {'path':path, 'board':board, 'scatterer':reflector, "H":H_CHIEF},
+    #                                 {}],
+    #         link_ax=[0,1],
+    #         arrangement=(2,2),
+    #         # cmaps=['hsv','hsv', 'hsv']
+    #         cmaps=['seismic','seismic', 'hot', 'hot']
+    #         )
 
 
-    save_holograms(x, f'./data/compare_reflector_wobble/Z/Z-holos/BEM/{n}.holo')
-    save_holograms(xCHIEF, f'./data/compare_reflector_wobble/Z/Z-holos/CHIEF/{n}.holo')
+    save_holograms(x, f'./Resonance/data/compare_reflector_wobble_flat/Z/Z-holos/BEM/{n}.holo')
+    save_holograms(xCHIEF, f'./Resonance/data/compare_reflector_wobble_flat/Z/Z-holos/CHIEF/{n}.holo')
 
-    exit()
+    # exit()
 
     # plt.gcf().clear()
     # # plt.gca().clear()
