@@ -112,19 +112,21 @@ _, _, Ar_CHIEF_rect, Ap_CHIEF_rect, _ = scipy.stats.linregress(log_list(Aconds_C
 
 
 import matplotlib.pyplot as plt
-plt.subplot(2,1,1)
-plt.plot(ds, ps, label = f'A OLS')
-plt.plot(ds, ps_LU, label = f'A LU')
-plt.plot(ds, ps_CHIEF, label = f'A CHIEF OLS')
-plt.plot(ds, ps_CHIEF_LU, label = f'A CHIEF LU')
-plt.plot(ds, ps_CHIEF_rect, label = f'A CHIEF rect OLS')
-plt.ylabel('Pressure (Pa)')
-plt.xlabel('Diameter (m)')
-# plt.xscale('log')
-# plt.yscale('log')
-plt.legend()
+plt.rcParams.update({'font.size': 20, 'font.family' : 'times',})
 
-plt.subplot(2,1,2)
+# plt.subplot(2,1,1)
+# plt.plot(ds, ps, label = f'A OLS')
+# plt.plot(ds, ps_LU, label = f'A LU')
+# plt.plot(ds, ps_CHIEF, label = f'A CHIEF OLS')
+# plt.plot(ds, ps_CHIEF_LU, label = f'A CHIEF LU')
+# plt.plot(ds, ps_CHIEF_rect, label = f'A CHIEF rect OLS')
+# plt.ylabel('Pressure (Pa)')
+# plt.xlabel('Diameter (m)')
+# # plt.xscale('log')
+# # plt.yscale('log')
+# plt.legend()
+
+# plt.subplot(2,1,2)
 plt.scatter(Aconds, ps, label = f'A OLS, r = {round_elem(Ar)}, p = {round_elem(Ap)}')
 plt.scatter(Aconds, ps_LU, label = f'A LU, r = {round_elem(Ar_LU)}, p = {round_elem(Ap_LU)}')
 plt.scatter(Aconds_CHIEF, ps_CHIEF, label = f'A CHIEF OLS, r = {round_elem(Ar_CHIEF)}, p = {round_elem(Ap_CHIEF)}')
