@@ -1,5 +1,5 @@
 from acoustools.Solvers import iterative_backpropagation, translate_hologram
-from acoustools.Utilities import create_points, add_lev_sig, generate_pressure_targets, TOP_BOARD, device, propagate_abs, TRANSDUCERS
+from acoustools.Utilities import create_points, add_lev_sig, generate_pressure_targets, TOP_BOARD, device, propagate_abs, TRANSDUCERS, BOARD_POSITIONS
 from acoustools.Optimise.Objectives import target_pressure_mse_objective, propagate_abs_sum_objective
 from acoustools.Optimise.Constraints import constrain_phase_only, constrant_normalise_amplitude
 from acoustools.Visualiser import Visualise,ABC
@@ -18,13 +18,13 @@ board = TOP_BOARD
 
 path = "../BEMMedia"
 
-reflector = load_scatterer(path + '/LargeTunnel-varied.stl')
+reflector = load_scatterer(path + '/LargeTunnel-full-lam2.stl')
 # d = wavelength*5
 bounds = reflector.bounds()
 scale_to_diameter(reflector, (bounds[1] - bounds[0])/1000)
 # vedo.show(reflector, axes=1)
 
-
+print(BOARD_POSITIONS)
 print(reflector.bounds())
 # get_edge_data(reflector)
 
@@ -32,6 +32,9 @@ print(reflector.bounds())
 # exit()
 
 COMPUTE = True
+
+holo = None
+holo_CHIEF = None
 
 if COMPUTE:
     H = get_cache_or_compute_H(reflector, board, path=path, use_cache_H=False, method='OLS')
@@ -47,13 +50,13 @@ else:
     H,E,H_CHIEF, E_CHIEF, internal_points = pickle.load(open('./Resonance/data/WT-lam4-objs.bin', 'rb'))
 
 
-start = create_points(1,1,0,0.04,0.03)
-end = create_points(1,1,0,-0.04,0.03)
+start = create_points(1,1,0,0.03,0.03)
+end = create_points(1,1,0,-0.03,0.03)
 
 path = interpolate_points(start, end, n=1000)
 
 
-def compute_trap(point,Hmat, baord):
+def compute_trap(point,Hmat, baord, start):
 
     def min_U(transducer_phases: Tensor, points:Tensor, board:Tensor, targets:Tensor = None, **objective_params):
         U = BEM_gorkov_analytical(transducer_phases, points, reflector, internal_points=None, path=path, board=board, H=Hmat, dims='Z')
@@ -66,11 +69,15 @@ def compute_trap(point,Hmat, baord):
 
 
 for n,p in enumerate(path):
-    print(n, end='\r')
+    # print(n, end='\r')
     
 
-    x = compute_trap(p, H, board)
-    xCHIEF = compute_trap(p, H_CHIEF, board)
+    x = compute_trap(p, H, board, start = holo)
+    xCHIEF = compute_trap(p, H_CHIEF, board, start=holo_CHIEF)
+
+    if holo is not None: print(n,(holo.angle() - x.angle()).abs().mean(), (holo_CHIEF.angle() - xCHIEF.angle()).abs().mean())
+    holo = x
+    holo_CHIEF = xCHIEF
 
     # print('Visualising')
     # Visualise(*ABC(0.07, plane='yz'), [x,xCHIEF, x, xCHIEF], res = (200,200),
@@ -87,8 +94,8 @@ for n,p in enumerate(path):
     #         )
 
 
-    save_holograms(x, f'./Resonance/data/compare_reflector_wobble_flat/Z/Z-holos/BEM/{n}.holo')
-    save_holograms(xCHIEF, f'./Resonance/data/compare_reflector_wobble_flat/Z/Z-holos/CHIEF/{n}.holo')
+    save_holograms(x, f'./data/compare_reflector_wobble/Z-phase/Z-holos/BEM/{n}.holo')
+    save_holograms(xCHIEF, f'./data/compare_reflector_wobble/Z-phase/Z-holos/CHIEF/{n}.holo')
 
     # exit()
 

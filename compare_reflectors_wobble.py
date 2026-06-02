@@ -18,7 +18,7 @@ p = create_points(1,1,0,0.0,0.03)
 
 path = "../BEMMedia"
 
-reflector = load_scatterer(path + '/LargeTunnel-varied.stl')
+reflector = load_scatterer(path + '/LargeTunnel-full-lam2.stl')
 
 # d = wavelength*5
 bounds = reflector.bounds()
@@ -52,9 +52,9 @@ if COMPUTE:
     E_CHIEF = compute_E(reflector, p, board, H=H_CHIEF)
     print('Computed H, E CHIEF')
 
-    pickle.dump([H,E,H_CHIEF, E_CHIEF, internal_points], open('./Resonance/data/WT-lam4-objs.bin', 'wb'))
+    pickle.dump([H,E,H_CHIEF, E_CHIEF, internal_points], open('./data/WT-lam4-objs.bin', 'wb'))
 else:
-    H,E,H_CHIEF, E_CHIEF, internal_points = pickle.load(open('./Resonance/data/WT-lam4-objs.bin', 'rb'))
+    H,E,H_CHIEF, E_CHIEF, internal_points = pickle.load(open('./data/WT-lam4-objs.bin', 'rb'))
     #
 
 def compute_trap(point, Emat,Hmat, baord):
