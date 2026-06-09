@@ -8,7 +8,7 @@ from acoustools.BEM import propagate_BEM_pressure, compute_E, propagate_BEM_phas
 from acoustools.Constants import wavelength,k
 from acoustools.Paths import interpolate_circle, interpolate_points
 from acoustools.Solvers import gradient_descent_solver
-from acoustools.Export.Holo import save_holograms
+from acoustools.Export.Holo import save_holograms, load_holograms
 from torch import Tensor
 import torch, pickle, vedo
 import os
@@ -19,6 +19,7 @@ board = TOP_BOARD
 path = "../BEMMedia"
 
 reflector = load_scatterer(path + '/LargeTunnel-full-lam2.stl')
+# reflector = load_scatterer(path + '/Sphere-lam1.stl')
 # d = wavelength*5
 bounds = reflector.bounds()
 scale_to_diameter(reflector, (bounds[1] - bounds[0])/1000)
@@ -31,10 +32,10 @@ print(reflector.bounds())
 # vedo.show(reflector, axes=1)
 # exit()
 
-COMPUTE = True
+COMPUTE = False
 
-holo = None
-holo_CHIEF = None
+holo = torch.zeros(1,256,1).to(device=device)
+holo_CHIEF = torch.zeros(1,256,1).to(device=device)
 
 if COMPUTE:
     H = get_cache_or_compute_H(reflector, board, path=path, use_cache_H=False, method='OLS')
@@ -45,13 +46,15 @@ if COMPUTE:
     H_CHIEF = get_cache_or_compute_H(reflector, board, path=path, use_cache_H=False, internal_points=internal_points, method='OLS')
     # E_CHIEF = compute_E(reflector, p, board, H=H_CHIEF)
 
-    # pickle.dump([H,E,H_CHIEF, E_CHIEF, internal_points], open('./Resonance/data/WT-lam4-objs.bin', 'wb'))
+    # pickle.dump([H,H_CHIEF, internal_points], open('./Resonance/data/WT-lam2-objs.bin', 'wb'))
+    pickle.dump([H,H_CHIEF, internal_points], open('./data/WT-lam2-objs.bin', 'wb'))
 else:
-    H,E,H_CHIEF, E_CHIEF, internal_points = pickle.load(open('./Resonance/data/WT-lam4-objs.bin', 'rb'))
+    # H,H_CHIEF, internal_points = pickle.load(open('./Resonance/data/WT-lam2-objs.bin', 'rb'))
+    H,H_CHIEF, internal_points = pickle.load(open('./data/WT-lam2-objs.bin', 'rb'))
 
-
-start = create_points(1,1,0,0.03,0.03)
-end = create_points(1,1,0,-0.03,0.03)
+# exit()
+start = create_points(1,1,0,-0.04,0.03)
+end = create_points(1,1,0,0.00,0.03)
 
 path = interpolate_points(start, end, n=1000)
 
@@ -63,7 +66,13 @@ def compute_trap(point,Hmat, baord, start):
         # print(U)
         return U.mean().unsqueeze(0)
 
-    x = gradient_descent_solver(point, min_U,board, lr=1e20, log=False)
+    def phase_change(transducer_phases: Tensor, points:Tensor, board:Tensor, targets:Tensor = None, **objective_params):
+        return (transducer_phases.angle() - targets.angle()).abs().mean()
+
+    def objective(transducer_phases: Tensor, points:Tensor, board:Tensor, targets:Tensor = None, **objective_params):
+        return min_U(transducer_phases, points, board, targets) + 1e-7 * phase_change(transducer_phases, points, board, targets)
+
+    x = gradient_descent_solver(point, objective,board, lr=1e20, log=False, targets=start)
 
     return x
 
@@ -75,28 +84,35 @@ for n,p in enumerate(path):
     x = compute_trap(p, H, board, start = holo)
     xCHIEF = compute_trap(p, H_CHIEF, board, start=holo_CHIEF)
 
-    if holo is not None: print(n,(holo.angle() - x.angle()).abs().mean(), (holo_CHIEF.angle() - xCHIEF.angle()).abs().mean())
-    holo = x
-    holo_CHIEF = xCHIEF
+    print(BEM_gorkov_analytical(x, p, H=H, board=board, path=path, scatterer=reflector), 
+          BEM_gorkov_analytical(x, p, H=H_CHIEF, board=board, path=path,scatterer=reflector), 
+          BEM_gorkov_analytical(xCHIEF, p, H=H_CHIEF, board=board, path=path, scatterer=reflector))
+
+    if holo is not None: print(n,(holo.angle() - x.angle()).abs().mean().item(), (holo_CHIEF.angle() - xCHIEF.angle()).abs().mean().item())
 
     # print('Visualising')
-    # Visualise(*ABC(0.07, plane='yz'), [x,xCHIEF, x, xCHIEF], res = (200,200),
-    #         colour_functions=[BEM_gorkov_analytical, BEM_gorkov_analytical, propagate_BEM_pressure, propagate_BEM_pressure],
+    # Visualise(*ABC(0.07, plane='yz'), [x,xCHIEF], res = (150,150), points=p,
+
+    #         colour_functions=[BEM_gorkov_analytical, BEM_gorkov_analytical],
     #         colour_function_args=[{'path':path, 'board':board, 'scatterer':reflector, "H":H_CHIEF},
     #                                 {'path':path, 'board':board, 'scatterer':reflector, "H":H_CHIEF},
-    #                                 {'path':path, 'board':board, 'scatterer':reflector, "H":H_CHIEF},
-    #                                 {'path':path, 'board':board, 'scatterer':reflector, "H":H_CHIEF},
+                                   
     #                                 {}],
     #         link_ax=[0,1],
-    #         arrangement=(2,2),
     #         # cmaps=['hsv','hsv', 'hsv']
-    #         cmaps=['seismic','seismic', 'hot', 'hot']
+    #         cmaps=['seismic', 'seismic']
     #         )
+    # exit()
 
+    save_holograms(x, f'./data/compare_reflector_wobble/Z/Z-holos-phase/BEM/{n}.holo')
+    save_holograms(xCHIEF, f'./data/compare_reflector_wobble/Z/Z-holos-phase/CHIEF/{n}.holo')
 
-    save_holograms(x, f'./data/compare_reflector_wobble/Z-phase/Z-holos/BEM/{n}.holo')
-    save_holograms(xCHIEF, f'./data/compare_reflector_wobble/Z-phase/Z-holos/CHIEF/{n}.holo')
+    xload = load_holograms(f'./data/compare_reflector_wobble/Z/Z-holos-phase/BEM/{n}.holo')[0]
+    xCHIEFload = load_holograms(f'./data/compare_reflector_wobble/Z/Z-holos-phase/CHIEF/{n}.holo')[0]
+    if holo is not None: print(n,(holo.angle() - xload.angle()).abs().mean(), (holo_CHIEF.angle() - xCHIEFload.angle()).abs().mean())
 
+    holo = x.clone()
+    holo_CHIEF = xCHIEF.clone()
     # exit()
 
     # plt.gcf().clear()
