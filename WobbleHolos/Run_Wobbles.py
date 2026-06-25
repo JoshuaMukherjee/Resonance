@@ -11,11 +11,11 @@ root = '.\data\compare_reflector_wobble\Z-holos-phase/'
 folder_BEM = 'BEM'
 folder_CHIEF = 'CHIEF'
 
-folder = folder_CHIEF
+folder = folder_BEM
 
 holos = []
 
-N = 5000
+N = 11500
 
 
 for i in range(N):
@@ -35,7 +35,7 @@ with LevitatorController(ids=(999)) as lev:
     lev.levitate(holos[0])
 
     input()
-    for holo in batch_list(holos[:N//2],16):
+    for holo in batch_list(holos,16):
         # if len(holo) > 0
         # :
         lev.levitate(holo)
