@@ -34,14 +34,15 @@ H,H_CHIEF, internal_points = pickle.load(open('./Resonance/data/WT-lam2-objs.bin
 # origin = create_points(0,0,0,0,0)
 # path = interpolate_circle(origin, 0.01, n = 100)
 
-N = 5000
-start = create_points(1,1,0,-0.01,0.03)
-end = create_points(1,1,0,0.01,0.03)
+N = 15000
+start = create_points(1,1,0,-0.03,0.03)
+end = create_points(1,1,0,0.03,0.03)
 path = interpolate_points(start, end, n=N)
 
 board = TOP_BOARD
 
 Hs = [H, H_CHIEF, H_CHIEF]
+labels=['BEM Sim', 'BEM Reality', 'CHIEF Reality']
 
 for j,folder in enumerate([folder_BEM, folder_BEM, folder_CHIEF]):
     holos = []
@@ -86,10 +87,11 @@ for j,folder in enumerate([folder_BEM, folder_BEM, folder_CHIEF]):
 
 
     plt.subplot(2,1,1)
-    plt.plot(Us)
+    plt.plot(Us, label=labels[j])
 
     plt.subplot(2,1,2)
-    plt.plot(phase_changes)
+    plt.plot(phase_changes, label=labels[j])
 
 
+plt.legend()
 plt.show()

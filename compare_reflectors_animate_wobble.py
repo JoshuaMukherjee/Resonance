@@ -54,9 +54,9 @@ else:
     # H,H_CHIEF, internal_points = pickle.load(open('./data/WT-lam2-objs.bin', 'rb'))
 
 # exit()
-start = create_points(1,1,0,-0.01,0.03)
-end = create_points(1,1,0,0.01,0.03)
-path = interpolate_points(start, end, n=5000)
+start = create_points(1,1,0,-0.03,0.03)
+end = create_points(1,1,0,0.03,0.03)
+path = interpolate_points(start, end, n=15000)
 
 
 # origin = create_points(0,0,0,0,0)
