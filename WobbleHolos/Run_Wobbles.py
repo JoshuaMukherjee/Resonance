@@ -7,15 +7,16 @@ import os, time
 # folder = 'data\compare_reflector_wobble\Z-holos-phase\CHIEF'
 
 # root = './Resonance/data/compare_reflector_wobble_flat/Z/Z-holos-phase/'
-root = '.\data\compare_reflector_wobble\Z-holos-phase/'
+root = '.\data\compare_reflector_wobble\Z-holos-phase-short/'
 folder_BEM = 'BEM'
 folder_CHIEF = 'CHIEF'
 
 folder = folder_BEM
 
+
 holos = []
 
-N = 11500
+N = 5000
 
 
 for i in range(N):
@@ -30,7 +31,7 @@ for i in range(N):
 
 with LevitatorController(ids=(999)) as lev:
 
-    lev.set_frame_rate(10000)
+    lev.set_frame_rate(5000)
 
     lev.levitate(holos[0])
 
