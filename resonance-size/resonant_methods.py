@@ -29,6 +29,7 @@ pressures_CHIEF_rect = []
 pressures_ac = []
 pressures_par = []
 pressures_bm = []
+pressures_bm_good = []
 pressures_ring = []
 
 
@@ -61,6 +62,7 @@ for i,d in enumerate(ds):
     Hpar = compute_H(infected_scatterer, board, use_LU=True, alphas = infected_alphas )
 
     Hbm = compute_H(reflector, board, use_LU=True, h=1e-3, BM_alpha=(1j)/(k) )
+    Hbmgood = compute_H(reflector, board, use_LU=True, h=1e-3, BM_alpha=(1j)/(20*k) )
 
     inner = load_scatterer(path + '/sphere-lam2.stl')
     inner.flip_normals()
@@ -80,6 +82,7 @@ for i,d in enumerate(ds):
     pressure_ac = propagate_BEM_pressure(x_focus, p, reflector, H=Hac, path=path, board=board ).mean().item()
     pressure_par = propagate_BEM_pressure(x_focus, p, infected_scatterer, H=Hpar, path=path , board=board).mean().item()
     pressure_bm = propagate_BEM_pressure(x_focus, p, reflector, H=Hbm, path=path , board=board).mean().item()
+    pressure_bm_good = propagate_BEM_pressure(x_focus, p, reflector, H=Hbmgood, path=path , board=board).mean().item()
     pressure_ring = propagate_BEM_pressure(x_focus, p, shell_scatterer, H=Hring, path=path, board=board ).mean().item()
 
     pressures.append(pressure)
@@ -88,6 +91,7 @@ for i,d in enumerate(ds):
     pressures_ac.append(pressure_ac)
     pressures_par.append(pressure_par)
     pressures_bm.append(pressure_bm)
+    pressures_bm_good.append(pressure_bm_good)
     pressures_ring.append(pressure_ring)
 
 
@@ -100,13 +104,14 @@ plt.plot(ds, pressures_CHIEF, label = 'CHIEF')
 plt.plot(ds, pressures_CHIEF_rect, label = 'CHIEF (Rect, OLS)')
 plt.plot(ds, pressures_ac, label='Modified Green')
 plt.plot(ds, pressures_par, label='Parasite')
-plt.plot(ds, pressures_bm, label='Burton-Miller (Finite Differences)')
+plt.plot(ds, pressures_bm, label='Burton-Miller (Finite Differences, i/k)')
+plt.plot(ds, pressures_bm_good, label='Burton-Miller (Finite Differences, i/20k)')
 plt.plot(ds, pressures_ring, label='ICV-Ring')
 
 plt.xlabel("Diameter (m)")
 plt.ylabel("Mean Internal Pressure (Pa)")
 
-pickle.dump([pressure, pressure_CHIEF, pressure_ac, pressure_par, pressure_bm, pressure_ring, ds], open('Pressure_vals.obj', 'wb'))
+pickle.dump([pressure, pressure_CHIEF, pressure_ac, pressure_par, pressure_bm, pressures_bm_good, pressure_ring, ds], open('Pressure_vals.obj', 'wb'))
 
 plt.legend()
 plt.show()

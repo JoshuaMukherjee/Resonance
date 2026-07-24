@@ -9,6 +9,9 @@ from acoustools.Constants import wavelength,k, P_ref
 
 import torch
 
+import matplotlib.pyplot as plt
+plt.rcParams.update({'font.size': 20, 'font.family' : 'times',})
+
 
 board = TOP_BOARD
 
@@ -30,7 +33,7 @@ get_edge_data(scatterer)
 centres = get_centres_as_points(scatterer)
 M = centres.shape[2]
 
-p = create_points(1,1, y=0,x=0,z=0)
+p = create_points(1,1, y=0,x=0,z=-0.02)
 
 x = iterative_backpropagation(p, board=board)
 x =translate_hologram(x, dz=0.001, board=board)
@@ -51,11 +54,11 @@ infected_alphas = torch.cat((outer_alphas, parasite_alphas), dim=1)
 Epar,Fpar,Gpar,Hpar = compute_E(infected_scatterer, p,board=board, path=path, use_cache_H=False, p_ref=p_ref,H_method=H_method, return_components=True, alphas=infected_alphas)
 
 
-internal_points  = get_CHIEF_points(scatterer, P = 30, start='centre', method='uniform', scale = 0.2, scale_mode='diameter-scale')
+internal_points  = get_CHIEF_points(scatterer, P = 50, method='tetra-random')
 Echief,Fchief,Gchief,Hchief = compute_E(scatterer, p,board=board, path=path, use_cache_H=False, p_ref=p_ref,H_method=H_method, return_components=True, internal_points=internal_points)
 
 
-Ebm,Fbm,Gbm,Hbm = compute_E(scatterer, p,board=board, path=path, use_cache_H=False, p_ref=p_ref,H_method=H_method, return_components=True, h=1e-3, BM_alpha=(1j)/(20*k))
+Ebm,Fbm,Gbm,Hbm = compute_E(scatterer, p,board=board, path=path, use_cache_H=False, p_ref=p_ref,H_method=H_method, return_components=True, h=1e-3, BM_alpha=(1j)/(k))
 
 
 inner = load_multiple_scatterers(paths)
@@ -72,7 +75,7 @@ Eshell,Fshell,Gshell,Hshell = compute_E(shell_scatterer, p,board=board, path=pat
 
 
 
-Visualise(*ABC(0.03), x,colour_functions=[propagate_BEM_pressure, propagate_BEM_pressure, propagate_BEM_pressure, propagate_BEM_pressure, propagate_BEM_pressure, propagate_BEM_pressure], res=(100,100),
+Visualise(*ABC(d/2 + 0.0005), x,colour_functions=[propagate_BEM_pressure, propagate_BEM_pressure, propagate_BEM_pressure, propagate_BEM_pressure, propagate_BEM_pressure, propagate_BEM_pressure], res=(100,100),
             colour_function_args=[{'scatterer':scatterer,'board':board,'path':path,"use_cache_H":False,"p_ref":p_ref,'k':k,"H":H},
                                   {'scatterer':scatterer,'board':board,'path':path,"use_cache_H":False,"p_ref":p_ref,'k':k,"H":Hac, 'a':a,'c':c},
                                   {'scatterer':infected_scatterer,'board':board,'path':path,"use_cache_H":False,"p_ref":p_ref,'k':k,"H":Hpar, 'alphas':infected_alphas},
@@ -81,6 +84,6 @@ Visualise(*ABC(0.03), x,colour_functions=[propagate_BEM_pressure, propagate_BEM_
                                   {'scatterer':shell_scatterer,'board':board,'path':path,"use_cache_H":False,"p_ref":p_ref,'k':k,"H":Hshell, "alphas":shell_alphas},
                                 ], 
             titles=["BEM", 'Modified Greens Function', 'Parasitic Body', 'CHIEF', "Burton-Miller F.D.", "Shell"],
-            arrangement=(2,3),
+            arrangement=(1,6),
             
             vmax=500)

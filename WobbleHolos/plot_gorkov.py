@@ -7,8 +7,10 @@ from acoustools.Mesh import load_scatterer,scale_to_diameter, centre_scatterer, 
 from acoustools.Visualiser import Visualise, ABC
 from acoustools.BEM import BEM_gorkov_analytical
 import os, torch, pickle
+import numpy as np
 
 import matplotlib.pyplot as plt
+plt.rcParams.update({'font.size': 20, 'font.family' : 'times',})
 
 # folder = 'data\compare_reflector_wobble\Z-holos\BEM'
 
@@ -34,20 +36,21 @@ H,H_CHIEF, internal_points = pickle.load(open('./Resonance/data/WT-lam2-objs.bin
 # origin = create_points(0,0,0,0,0)
 # path = interpolate_circle(origin, 0.01, n = 100)
 
-N = 15000
-start = create_points(1,1,0,-0.03,0.03)
-end = create_points(1,1,0,0.03,0.03)
-path = interpolate_points(start, end, n=N)
+N = 5000
+start = create_points(1,1,0,-0.01,0.03)
+end = create_points(1,1,0,0.01,0.03)
+n = N
+path = interpolate_points(start, end, n=N)[:n]
 
 board = TOP_BOARD
 
 Hs = [H, H_CHIEF, H_CHIEF]
-labels=['BEM Sim', 'BEM Reality', 'CHIEF Reality']
+labels=['BEM Generated, BEM Rendered', 'BEM Generated, CHIEF Rendered', 'CHIEF Generated, CHIEF Rendered']
 
 for j,folder in enumerate([folder_BEM, folder_BEM, folder_CHIEF]):
     holos = []
 
-    for i in range(N):
+    for i in range(n):
         print(i, end='\r')
         # x = load_holograms(root+folder+'/'+f)[0]
         try:
@@ -86,11 +89,17 @@ for j,folder in enumerate([folder_BEM, folder_BEM, folder_CHIEF]):
         prev = x.clone()
 
 
-    plt.subplot(2,1,1)
+    # plt.subplot(2,1,1)
+    UsN = len(Us)
+    Us = np.convolve(np.array(Us), np.ones(5)/5, mode='valid')
+
     plt.plot(Us, label=labels[j])
 
-    plt.subplot(2,1,2)
-    plt.plot(phase_changes, label=labels[j])
+    # plt.subplot(2,1,2)
+    # plt.plot(phase_changes, label=labels[j])
+
+    plt.ylabel("Gor'kov Potential at Trap Location (J)")
+    plt.xlabel("Frame No.")
 
 
 plt.legend()
