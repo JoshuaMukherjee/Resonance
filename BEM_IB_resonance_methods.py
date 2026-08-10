@@ -75,7 +75,7 @@ Eshell,Fshell,Gshell,Hshell = compute_E(shell_scatterer, p,board=board, path=pat
 
 
 
-Visualise(*ABC(d/2 + 0.0005), x,colour_functions=[propagate_BEM_pressure, propagate_BEM_pressure, propagate_BEM_pressure, propagate_BEM_pressure, propagate_BEM_pressure, propagate_BEM_pressure], res=(100,100),
+Visualise(*ABC(d/2 + 0.0005), x,colour_functions=[propagate_BEM_pressure, propagate_BEM_pressure, propagate_BEM_pressure, propagate_BEM_pressure, propagate_BEM_pressure, propagate_BEM_pressure], res=(500,500),
             colour_function_args=[{'scatterer':scatterer,'board':board,'path':path,"use_cache_H":False,"p_ref":p_ref,'k':k,"H":H},
                                   {'scatterer':scatterer,'board':board,'path':path,"use_cache_H":False,"p_ref":p_ref,'k':k,"H":Hac, 'a':a,'c':c},
                                   {'scatterer':infected_scatterer,'board':board,'path':path,"use_cache_H":False,"p_ref":p_ref,'k':k,"H":Hpar, 'alphas':infected_alphas},
@@ -83,7 +83,7 @@ Visualise(*ABC(d/2 + 0.0005), x,colour_functions=[propagate_BEM_pressure, propag
                                   {'scatterer':scatterer,'board':board,'path':path,"use_cache_H":False,"p_ref":p_ref,'k':k,"H":Hbm},
                                   {'scatterer':shell_scatterer,'board':board,'path':path,"use_cache_H":False,"p_ref":p_ref,'k':k,"H":Hshell, "alphas":shell_alphas},
                                 ], 
-            titles=["BEM", 'Modified Greens Function', 'Parasitic Body', 'CHIEF', "Burton-Miller F.D.", "Shell"],
+            titles=["BEM", 'Modified Greens Function', 'Parasitic Body', 'CHIEF', "Burton-Miller F.D.", "ICA-Ring"],
             arrangement=(1,6),
             
             vmax=500)
