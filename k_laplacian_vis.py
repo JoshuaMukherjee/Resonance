@@ -60,21 +60,26 @@ if __name__ == '__main__':
     print(torch.norm(E_lap,p=2))    
     
     def check_k(x):
-        return torch.sqrt(x) 
+        return torch.sqrt(x) / k
 
 
     Visualise(*ABC(0.01), x, points=internal_points, res=(100,100),
               link_ax=None, titles=['$p$', '$\Delta p$', "$k_{est}$", '$p$', '$\Delta p$', "$k_{est}$", '', '', '' ],
               colour_functions=[propagate_BEM_pressure, propagate_BEM_laplacian_abs, '/', propagate_BEM_pressure, propagate_BEM_laplacian_abs, '/', '/','/','/'], 
-              colour_function_args=[{"path":path, 'H':H, 'board':board, 'scatterer':scatterer, 'p_ref':p_ref}, {"path":path, 'H':H, 'board':board,  'scatterer':scatterer , 'p_ref':p_ref},{"post_function":check_k, 'ids':[0,1]},
-                                    {"path":path, 'board':board, 'scatterer':scatterer, 'p_ref':p_ref}, {"path":path, 'board':board,  'scatterer':scatterer , 'p_ref':p_ref},{"post_function":check_k, 'ids':[3,4]},
+              colour_function_args=[{"path":path, 'H':H, 'board':board, 'scatterer':scatterer, 'p_ref':p_ref}, 
+                                    {"path":path, 'H':H, 'board':board,  'scatterer':scatterer , 'p_ref':p_ref},
+                                    {"post_function":check_k, 'ids':[0,1]},
+                                    {"path":path, 'board':board, 'scatterer':scatterer, 'p_ref':p_ref}, 
+                                    {"path":path, 'board':board,  'scatterer':scatterer , 'p_ref':p_ref},
+                                    {"post_function":check_k, 'ids':[3,4]},
                                     {'ids':[0,3]}, {'ids':[1,4]},{'ids':[2,5]}
                                     ],
-              arrangement=(3,3),
-                                    )
+              arrangement=(3,3),                                    )
 
     # import matplotlib.pyplot as plt
 
     # plt.matshow(E_lap.abs().squeeze().reshape(16,16).detach())
+
+
 
     # plt.show20
