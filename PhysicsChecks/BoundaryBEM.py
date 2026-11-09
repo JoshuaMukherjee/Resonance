@@ -86,6 +86,8 @@ for j,internal_points in enumerate([None, IP]):
 x = [i for i in range(int(plt.gca().get_xlim()[1]))]
 y = [2 * i for i in x]
 plt.plot(x,y)
+plt.ylabel("p_m")
+plt.xlabel("p_inc + p_scat")
 
 plt.show()
     
