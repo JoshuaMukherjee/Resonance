@@ -10,9 +10,6 @@ data = pd.read_csv('Resonance/data/outputs/force/ARF.csv')
 radius = [d /( 2*wavelength) for d in data['Diameter (m) ']]
 force = data['ARF CHIEF (P=0) (N)']
 
-
-
-
 sh_data = pd.read_csv('Resonance/data/outputs/force/SH-Force.csv')
 sh_radius = [d /( wavelength) for d in sh_data['Diameter (lam)']]
 sh_force = sh_data['SH Force (N)']
