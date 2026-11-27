@@ -9,6 +9,7 @@ import scipy
 from acoustools.SphericalHarmonics.Propagators import spherical_harmonics_propagate
 
 import matplotlib.pyplot as plt
+plt.rcParams.update({'font.size': 20, 'font.family' : 'times',})
 
 import torch
 
@@ -24,7 +25,7 @@ scale_to_diameter(scatterer, diameter=d)
 
 internal_points  = get_CHIEF_points(scatterer, P = 50, method='tetra-random')
 
-points = random_points_ring(1000, min_r=d + 0.1*wavelength)
+points = random_points_ring(1000, min_r=d + 0.1* wavelength)
 
 
 H = get_cache_or_compute_H(scatterer, board, use_cache_H=False, internal_points=internal_points)

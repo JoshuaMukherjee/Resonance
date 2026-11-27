@@ -27,12 +27,13 @@ IP  = get_CHIEF_points(scatterer, P = 50, method='tetra-random')
 
 # vedo.show((scatterer.wireframe(), scatterer_minus.wireframe(), scatterer_plus.wireframe()), axes=1)
 import matplotlib.pyplot as plt
+plt.rcParams.update({'font.size': 20, 'font.family' : 'times',})
 
-plt.rcParams['text.usetex'] = False
-font = {'family' : 'serif',
-        'weight' : 'bold',
-        'size'   : 30}
-plt.rc('font', **font)  # pass in the font dict as kwargs
+# plt.rcParams['text.usetex'] = False
+# font = {'family' : 'serif',
+#         'weight' : 'bold',
+#         'size'   : 30}
+# plt.rc('font', **font)  # pass in the font dict as kwargs
 
 BINS =50
 
@@ -86,8 +87,8 @@ for j,internal_points in enumerate([None, IP]):
 x = [i for i in range(int(plt.gca().get_xlim()[1]))]
 y = [2 * i for i in x]
 plt.plot(x,y)
-plt.ylabel("p_m")
-plt.xlabel("p_inc + p_scat")
+plt.ylabel("$p_m$")
+plt.xlabel("$p_{inc} + p_{scat}$")
 
 plt.show()
     

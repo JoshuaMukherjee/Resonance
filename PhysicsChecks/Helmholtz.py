@@ -16,7 +16,7 @@ d = wavelength *2
 centre_scatterer(scatterer)
 scale_to_diameter(scatterer, diameter=d)
 
-points = random_points_ring(10000, min_r=d + 1*wavelength)
+points = random_points_ring(100, min_r=d + 1*wavelength)
 
 internal_points  = get_CHIEF_points(scatterer, P = 50, method='tetra-random')
 
@@ -41,30 +41,61 @@ p_CHIEF = E_CHIEF @ x
 p = E @ x
 
 
-k_CHIEF = (((lap_CHIEF / p_CHIEF) * -1) ** 0.5).detach().squeeze()
-k = (((lap / p) * -1) ** 0.5).detach().squeeze()
+# k_CHIEF = (((lap_CHIEF / p_CHIEF) * -1) ** 0.5).detach().squeeze()
+# k = (((lap / p) * -1) ** 0.5).detach().squeeze()
 
-print(k_c)
-print(k_CHIEF.mean())
-print(k.mean())
+# print(k_c)
+# print(k_CHIEF.mean())
+# print(k.mean())
+
+# import matplotlib.pyplot as plt
+
+# plt.subplot(1,2,1)
+# plt.scatter(k.real, k.imag, label='BEM')
+# plt.scatter(k_CHIEF.real, k_CHIEF.imag, label='CHIEF')
+# plt.vlines(k_c, ymin=plt.gca().get_ylim()[0], ymax=plt.gca().get_ylim()[1], linestyle=':')
+# plt.hlines(0, xmin=plt.gca().get_xlim()[0], xmax=plt.gca().get_xlim()[1], linestyle=':')
+# plt.ylabel("Im(k)")
+# plt.xlabel("Re(k)")
+# plt.legend()
+
+
+
+# plt.subplot(1,2,2)
+# BINS =500
+# plt.hist([k.real/k_c, k_CHIEF.real/k_c], bins=BINS, alpha=1, label=['BEM','CHIEF'])
+# plt.xlabel("Re(k)")
+# plt.ylabel("Frequency")
+# plt.legend()
+# plt.xlim(0.995, 1.005)
+
+# plt.show()
+
+
+
+CHIEF_RATIO = (((lap_CHIEF / (p_CHIEF * k_c**2)) * -1)).detach().squeeze()
+RATIO = (((lap / (p * k_c**2)) * -1)).detach().squeeze()
+
+print(CHIEF_RATIO)
+
 
 import matplotlib.pyplot as plt
 
 plt.subplot(1,2,1)
-plt.scatter(k.real, k.imag, label='BEM')
-plt.scatter(k_CHIEF.real, k_CHIEF.imag, label='CHIEF')
-plt.vlines(k_c, ymin=plt.gca().get_ylim()[0], ymax=plt.gca().get_ylim()[1], linestyle=':')
-plt.hlines(0, xmin=plt.gca().get_xlim()[0], xmax=plt.gca().get_xlim()[1], linestyle=':')
-plt.ylabel("Im(k)")
-plt.xlabel("Re(k)")
+plt.scatter(RATIO.real, RATIO.imag, label='BEM')
+plt.scatter(CHIEF_RATIO.real, CHIEF_RATIO.imag, label='CHIEF')
+# plt.vlines(k_c, ymin=plt.gca().get_ylim()[0], ymax=plt.gca().get_ylim()[1], linestyle=':')
+# plt.hlines(0, xmin=plt.gca().get_xlim()[0], xmax=plt.gca().get_xlim()[1], linestyle=':')
+plt.ylabel(r"$Im(\nabla ^2 p / (-k^2 p))$")
+plt.xlabel(r"$Re(\nabla ^2 p / (-k^2 p))$")
 plt.legend()
 
 
 
 plt.subplot(1,2,2)
 BINS =500
-plt.hist([k.real/k_c, k_CHIEF.real/k_c], bins=BINS, alpha=1, label=['BEM','CHIEF'])
-plt.xlabel("Re(k)")
+plt.hist([RATIO.real, CHIEF_RATIO.real], bins=BINS, alpha=1, label=['BEM','CHIEF'])
+plt.xlabel(r"$Re(\nabla ^2 p / (-k^2 p))$")
 plt.ylabel("Frequency")
 plt.legend()
 plt.xlim(0.995, 1.005)

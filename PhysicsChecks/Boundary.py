@@ -15,8 +15,8 @@ scatterer = load_scatterer(path + 'Sphere-lam2.stl')
 board = TRANSDUCERS
 
 
-d = wavelength * 2
-# d = wavelength * 2.5
+# d = wavelength * 2
+d = wavelength * 2.5
 centre_scatterer(scatterer)
 scale_to_diameter(scatterer, diameter=d)
 get_edge_data(scatterer)
@@ -38,12 +38,13 @@ scale_to_diameter(scatterer_plus, diameter= d + 2*fin_diff_h)
 
 # vedo.show((scatterer.wireframe(), scatterer_minus.wireframe(), scatterer_plus.wireframe()), axes=1)
 import matplotlib.pyplot as plt
+plt.rcParams.update({'font.size': 20, 'font.family' : 'times',})
 
-plt.rcParams['text.usetex'] = True
-font = {'family' : 'serif',
-        'weight' : 'bold',
-        'size'   : 30}
-plt.rc('font', **font)  # pass in the font dict as kwargs
+# plt.rcParams['text.usetex'] = True
+# font = {'family' : 'serif',
+#         'weight' : 'bold',
+#         'size'   : 30}
+# plt.rc('font', **font)  # pass in the font dict as kwargs
 
 BINS =50
 
@@ -75,7 +76,7 @@ for j,internal_points in enumerate([None, IP]):
         p_grad = (H_grad @ x)[0,:,0]
         p = (H @ x)[0,:,0]
         
-        imp = p_grad / (1j * k_c * p)
+        imp = p_grad #/ (1j * k_c * p)
         # print(imp.shape)
         
         imps += imp.abs().tolist()
